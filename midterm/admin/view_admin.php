@@ -1,0 +1,54 @@
+<?php
+require '../model/database.php';
+
+// Set default sorting order
+$sort_order = "vehicles.price DESC"; // Default sorting by price (highest to lowest)
+
+// Check if sort parameter is set in the URL
+if(isset($_GET['sort'])) {
+    
+    $selected_sort = $_GET['sort'];
+    
+   
+    if($selected_sort == "year_desc") {
+        $sort_order = "vehicles.year DESC";
+    }
+}
+
+// Initialize SQL query
+$sql = "SELECT vehicles.id, vehicles.year, vehicles.model, vehicles.price, types.type, classes.class, makes.make
+        FROM vehicles
+        INNER JOIN types ON vehicles.type_id = types.id
+        INNER JOIN classes ON vehicles.class_id = classes.id
+        INNER JOIN makes ON vehicles.make_id = makes.id";
+
+
+$conditions = array();
+
+
+if(isset($_GET['make']) && !empty($_GET['make'])) {
+    $make = $_GET['make'];
+    $conditions[] = "makes.make = '$make'";
+}
+
+if(isset($_GET['type']) && !empty($_GET['type'])) {
+    $type = $_GET['type'];
+    $conditions[] = "types.type = '$type'";
+}
+
+
+if(isset($_GET['class']) && !empty($_GET['class'])) {
+    $class = $_GET['class'];
+    $conditions[] = "classes.class = '$class'";
+}
+
+
+if (!empty($conditions)) {
+    $sql .= " WHERE " . implode(" AND ", $conditions);
+}
+
+
+$sql .= " ORDER BY $sort_order";
+
+
+$result = $db->query($sql);
